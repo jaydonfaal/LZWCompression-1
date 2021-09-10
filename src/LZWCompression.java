@@ -30,7 +30,8 @@ public class LZWCompression {
 
 	HashMap <String,String> map;
 	String theText = "";
-
+	
+	//Constructor -- initializes the first 255 values
 	public LZWCompression (){
 		map = new HashMap<String, String>();
 		for(int i = 0; i < 256; i++)
@@ -45,7 +46,8 @@ public class LZWCompression {
 			map.put(actualLetters, binaryString);
 		}
 	}
-
+	
+	//Converts the file into a String
 	private void readText() throws IOException
 	{
 		//String theText = "";
@@ -59,7 +61,8 @@ public class LZWCompression {
 		}
 		theReader.close();
 	}
-
+	
+	//Compression algorithm
 	public void LZWcompress() {
 		String s = "";
 		String c = "";
