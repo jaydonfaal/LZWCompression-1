@@ -63,6 +63,7 @@ public class LZWCompression {
 	public void LZWcompress() {
 		String s = "";
 		String c = "";
+		int num = 0;
 		int counter = 0;
 		s+=theText.charAt(counter);
 		while(theText.charAt(counter)!=-1) {
@@ -73,9 +74,10 @@ public class LZWCompression {
 			}
 			else
 			{
-				String binString=Integer.toBinaryString(256+counter);
+				String binString=Integer.toBinaryString(256+num);
 				map.put(binString,(s+c));
 				counter++;
+				num++;
 				s=c;
 			}
 		}
