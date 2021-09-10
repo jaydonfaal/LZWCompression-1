@@ -48,7 +48,7 @@ public class LZWCompression {
 	}
 	
 	//Converts the file into a String
-	private void readText() throws IOException
+	public void readText() throws IOException
 	{
 		//String theText = "";
 		BufferedReader theReader = new BufferedReader (new FileReader("lzw-file1.txt"));
@@ -64,7 +64,9 @@ public class LZWCompression {
 	
 	//Compression algorithm
 	public void LZWcompress() {
+		//s is the current value in the algorithm
 		String s = "";
+		//c is the "next" in the algorithm
 		String c = "";
 		int num = 0;
 		int counter = 0;
@@ -84,9 +86,8 @@ public class LZWCompression {
 				s=c;
 			}
 		}
-			
 	}
-
+	
 	public static void writeToFile(String str) throws IOException
 	{
 		char[] ascii = str.toCharArray();
