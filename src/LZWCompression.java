@@ -1,8 +1,7 @@
 import java.io.*;
-
-import java.util.HashMap;
-
 import java.util.*;
+import java.nio.charset.*;
+import java.nio.file.*;
 
 public class LZWCompression {
 
@@ -12,9 +11,12 @@ public class LZWCompression {
 
 	String output = "";
 
+	String inputPath = "";
+
 	//Constructor -- initializes the first 256 values
 
-	public LZWCompression (){
+	public LZWCompression (String path){
+		inputPath = path;
 		map = new HashMap<String, String>();
 
 		for(int i = 0; i < 256; i++)
@@ -39,27 +41,15 @@ public class LZWCompression {
 
 	//Converts the file into a String
 
-	public void readText() {
+	public void readFile() {
 
 		try {
-			BufferedReader theReader = new BufferedReader (new FileReader("lzw-file1.txt"));
-
-
-
-			int w = theReader.read();
-
-			while (w!=-1){
-
-				theText += (char)theReader.read();
-
-				w=theReader.read();
-			}
-
-			theReader.close();
+			theText = Files.readString(Paths.get(inputPath + ".txt"), StandardCharsets.UTF_8);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 		
+		System.out.println(theText);
 
 		
 
@@ -69,17 +59,8 @@ public class LZWCompression {
 
 	public void LZWcompress() {
 
-		//s is the current value in the algorithm
-
+		output = "";
 		String current = "";
-
-		//c is the "next" in the algorithm
-
-		String next = "";
-
-		int num = 0;
-
-		int counter = 0;
 
 		for(int i = 0; i < theText.length(); i++) {
 
@@ -96,22 +77,24 @@ public class LZWCompression {
 
 				map.put(current + theText.charAt(i + 1), Integer.toBinaryString(map.size()));
 
-				output = "";
+				current = "";
 
 			}
 		}
 		System.out.println(output);
 	}
 
+	//Encode the compressed file
 
-	public static void main(String[] args) {
-
-		LZWCompression test = new LZWCompression();
-
-		test.readText();
-
-		test.LZWcompress();
-
+	public void writeFile() {
+		BinaryOut out = new BinaryOut(inputPath + ".dat");
+		for (int i = 0; i < output.length(); i++) {
+			if (output.charAt(i) == '0') {
+				out.write(false);
+			} else {
+				out.write(true);
+			}
+		}
+		out.flush();
 	}
-
 }
