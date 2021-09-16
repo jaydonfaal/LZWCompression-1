@@ -7,16 +7,18 @@ public class LZWCompression {
 
 	HashMap <String,String> map;
 
-	String theText = "";
+	String theText = "";	
 
-	String output = "";
+	String path = "";
 
-	String inputPath = "";
+	String encodeOutput = "";
+
+	String decodeOutput = "";
 
 	//Constructor -- initializes the first 256 values
 
 	public LZWCompression (String path){
-		inputPath = path;
+		this.path = path;
 		map = new HashMap<String, String>();
 
 		for(int i = 0; i < 256; i++)
@@ -44,22 +46,18 @@ public class LZWCompression {
 	public void readFile() {
 
 		try {
-			theText = Files.readString(Paths.get(inputPath + ".txt"), StandardCharsets.UTF_8);
+			theText = Files.readString(Paths.get(path + ".txt"), StandardCharsets.UTF_8);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 		
-		System.out.println(theText);
-
-		
-
 	}
 
 	//Compression algorithm
 
 	public void LZWcompress() {
 
-		output = "";
+		encodeOutput = "";
 		String current = "";
 
 		for(int i = 0; i < theText.length(); i++) {
@@ -68,33 +66,78 @@ public class LZWCompression {
 
 			if (i == theText.length() - 1) {
 
-				output+=map.get(current);
+				encodeOutput+=map.get(current);
 
 			} 
 			else if (!map.containsKey(current + theText.charAt(i + 1))) {
 
-				output+=map.get(current);
+				encodeOutput+=map.get(current);
 
-				map.put(current + theText.charAt(i + 1), Integer.toBinaryString(map.size()));
+				if (map.size() < 512) {
+					map.put(current + theText.charAt(i + 1), Integer.toBinaryString(map.size()));
+				}
 
 				current = "";
 
 			}
 		}
-		System.out.println(output);
+		
+		System.out.println(encodeOutput);
 	}
 
 	//Encode the compressed file
 
 	public void writeFile() {
-		BinaryOut out = new BinaryOut(inputPath + ".dat");
-		for (int i = 0; i < output.length(); i++) {
-			if (output.charAt(i) == '0') {
+		BinaryOut out = new BinaryOut(path + ".dat");
+		for (int i = 0; i < encodeOutput.length(); i++) {
+			if (encodeOutput.charAt(i) == '0') {
 				out.write(false);
 			} else {
 				out.write(true);
 			}
 		}
 		out.flush();
+	}
+
+	//Decode output binary string
+
+	public void LZWdecompress() {
+		HashMap <String, String> decodeMap = new HashMap <String, String>();
+
+		for(int i = 0; i < 256; i++)
+
+		{
+			String binaryString = Integer.toBinaryString(i);
+
+			int l = 9-binaryString.length();
+
+			for(int j = 0; j < l; j++){
+
+				binaryString = "0"+binaryString;
+			}
+
+			String actualLetters = Character.toString((char)i);
+
+			decodeMap.put(binaryString, actualLetters);
+
+		}
+
+		for(int i = 0; i < encodeOutput.length(); i+=9) {
+
+			String current = decodeMap.get(encodeOutput.substring(i, i+9));
+			
+			decodeOutput += current;
+
+			if (i < encodeOutput.length() - 9) {
+				String next = decodeMap.get(encodeOutput.substring(i+9, i+18));
+				if (next == null) { //special add
+					decodeMap.put(Integer.toBinaryString(decodeMap.size()), current + current.substring(0, 1));
+				} else {
+					decodeMap.put(Integer.toBinaryString(decodeMap.size()), current + next.substring(0, 1));
+				}
+			}			
+		}
+
+		System.out.println(decodeOutput);
 	}
 }
