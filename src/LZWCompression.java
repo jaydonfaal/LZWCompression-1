@@ -388,7 +388,7 @@ long startTime = System.nanoTime(); //timer variable, records start time
 	//Encode the compressed file
 
 	public void writeFile() {
-		BinaryOut out = new BinaryOut(path + ".dat");
+		BinaryOut out = new BinaryOut("compressed.dat");
 		for (int i = 0; i < encodeOutput.length(); i++) {
 			if (encodeOutput.charAt(i) == '0') {
 				out.write(false);
