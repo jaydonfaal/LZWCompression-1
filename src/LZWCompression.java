@@ -5,13 +5,14 @@ import java.nio.file.*;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.OutputStream;
 import java.net.Socket;
 
 public class LZWCompression {
 
-
-
+long startTime = System.nanoTime(); //timer variable, records start time
 	public final class BinaryOut {
 
 	    private BufferedOutputStream out;  // the output stream
@@ -294,20 +295,28 @@ public class LZWCompression {
 	}
 
 
-	HashMap <String,String> map;
+	HashMap <String,String> map; //is the dictionary
 
-	String theText = "";
+	String theText = "";  //full file text as string
 
-	String path = "";
+	String path = ""; //file name
 
-	String encodeOutput = "";
+	String encodeOutput = ""; //encoded message as string
 
-	String decodeOutput = "";
+	String decodeOutput = ""; //decoded message as string
 
-	//Constructor -- initializes the first 256 values
+	//Constructor -- initializes the first 256 values | dictionary limited to a total of 400 entries
 
-	public LZWCompression (String path){
-		this.path = path;
+	public LZWCompression (String file)
+	{
+		File tempFile = new File(file+".txt"); //checks to see if the file to be read actually exists
+		if(tempFile.exists() == false)
+		{
+				System.out.println("You're Bad: File Not Found");
+				System.exit(1);
+		}
+
+		path = file;
 		map = new HashMap<String, String>();
 
 		for(int i = 0; i < 256; i++)
@@ -349,7 +358,8 @@ public class LZWCompression {
 		encodeOutput = "";
 		String current = "";
 
-		for(int i = 0; i < theText.length(); i++) {
+		for(int i = 0; i < theText.length(); i++) //limits additional dictionary entries to 300
+		{
 
 			current+=theText.charAt(i);
 
@@ -362,7 +372,8 @@ public class LZWCompression {
 
 				encodeOutput+=map.get(current);
 
-				if (map.size() < 512) {
+				if (map.size() < 400)//limits the dictionary size to 400 entries
+				{
 					map.put(current + theText.charAt(i + 1), Integer.toBinaryString(map.size()));
 				}
 
@@ -371,7 +382,7 @@ public class LZWCompression {
 			}
 		}
 
-		System.out.println(encodeOutput);
+
 	}
 
 	//Encode the compressed file
@@ -390,7 +401,8 @@ public class LZWCompression {
 
 	//Decode output binary string
 
-	public void LZWdecompress() {
+	public void LZWdecompress()
+	 {
 		HashMap <String, String> decodeMap = new HashMap <String, String>();
 
 		for(int i = 0; i < 256; i++)
@@ -425,27 +437,31 @@ public class LZWCompression {
 					decodeMap.put(Integer.toBinaryString(decodeMap.size()), current + next.substring(0, 1));
 				}
 			}
+
 		}
 
-		System.out.println(decodeOutput);
+		try //writes decoded data to output file (decoded.txt)
+		{
+
+		BufferedWriter decoded = new BufferedWriter(new FileWriter("decoded.txt"));
+		decoded.write(decodeOutput);
+		decoded.close();
+	}catch(IOException e){}
+
+	}
+
+	public void compressDecompress()//compresses file then decompresses file and ouputs to decoded.txt
+	{
+		readFile();
+		LZWcompress();
+		writeFile();
+		LZWdecompress();
+		System.out.println("Finished in " + (System.nanoTime()-startTime)/1000000 + " miliseconds");
 	}
 
 	public static void main (String[]args)
 	{
-		LZWCompression file1 = new LZWCompression("lzw-file1");
-		file1.readFile();
-		file1.LZWcompress();
-		file1.writeFile();
-		file1.LZWdecompress();
-		LZWCompression file2 = new LZWCompression("lzw-file2");
-		file2.readFile();
-		file2.LZWcompress();
-		file2.writeFile();
-		file2.LZWdecompress();
-		LZWCompression file3 = new LZWCompression("lzw-file3");
-		file3.readFile();
-		file3.LZWcompress();
-		file3.writeFile();
-		file3.LZWdecompress();
+		LZWCompression file1 = new LZWCompression("lzw-file3");
+		file1.compressDecompress();
 	}
 }
